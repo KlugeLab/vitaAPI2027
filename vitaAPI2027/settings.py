@@ -66,10 +66,11 @@ ROOT_URLCONF = 'vitaAPI2027.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -160,3 +161,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# Solo para un laboratorio aislado, nunca para producción.
+VITA_SYNC_ALLOW_HTTP_DEV = env.bool('VITA_SYNC_ALLOW_HTTP_DEV', default=False)

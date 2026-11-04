@@ -6,6 +6,7 @@ class InstalacionSucursal(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sucursal = models.OneToOneField('organizacion.Sucursal', on_delete=models.PROTECT, related_name='instalacion_api')
     activa = models.BooleanField(default=True)
+    token_sha256 = models.CharField(max_length=64, blank=True, default='', help_text='SHA-256 de token aleatorio; nunca conservar token en claro.')
     ultima_conexion = models.DateTimeField(null=True, blank=True)
     version_contrato = models.PositiveIntegerField(default=1)
 
@@ -36,3 +37,13 @@ class DestinoEvento(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['evento', 'instalacion'], name='uq_evento_instalacion')]
+
+
+class ContadorPublicacion(models.Model):
+    """Fila de bloqueo de publicación; serializa las secuencias de eventos.
+
+    La fila con pk=1 se bloquea en PostgreSQL antes de publicar cada lote.
+    No usar el ID de evento como cursor: los commits pueden intercalarse.
+    """
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    ultimo_valor = models.PositiveBigIntegerField(default=0)
