@@ -19,6 +19,8 @@ class Command(BaseCommand):
             sucursal = Sucursal.objects.get(codigo=options['codigo'], activa=True)
         except Sucursal.DoesNotExist as exc:
             raise CommandError('Sucursal inexistente o inactiva.') from exc
+        if sucursal.tipo == Sucursal.TIPO_CENTRAL:
+            raise CommandError('El almacén central no se aprovisiona como instalación de sucursal.')
         with transaction.atomic():
             inst, creada = InstalacionSucursal.objects.select_for_update().get_or_create(
                 sucursal=sucursal, defaults={'activa': True}

@@ -10,7 +10,7 @@ from apps.identidad.api.serializers import (
     EmpleadoCrearSerializer, EmpleadoActualizarSerializer, EmpleadoSerializer,
     RestablecerClaveSerializer, RolCrearSerializer, RolActualizarSerializer,
     RolPermisosSerializer, RolSerializer, CatalogoPermisoSerializer,
-    SucursalSerializer, AsignacionCrearSerializer, AsignacionSerializer,
+    SucursalSerializer, SucursalEscrituraSerializer, AsignacionCrearSerializer, AsignacionSerializer,
 )
 from apps.identidad.models import AsignacionSucursal, CatalogoPermiso, Rol
 from apps.identidad.services import asignaciones, empleados, roles, sucursales
@@ -149,20 +149,29 @@ class CatalogoPermisoViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
 class SucursalViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                       mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Sucursal.objects.all().order_by('codigo')
+    queryset = Sucursal.objects.select_related('estado','municipio','codigo_postal','colonia').all().order_by('codigo')
     serializer_class = SucursalSerializer
     permission_classes = [PuedeAdministrarIdentidad]
     permisos_por_accion = {
         'list': 'organizacion.view_sucursal',
         'retrieve': 'organizacion.view_sucursal',
         'create': 'organizacion.add_sucursal',
+        'partial_update': 'organizacion.change_sucursal',
     }
 
     def create(self, request, *args, **kwargs):
-        entrada = self.get_serializer(data=request.data)
+        entrada = SucursalEscrituraSerializer(data=request.data)
         entrada.is_valid(raise_exception=True)
         obj = ejecutar(sucursales.crear_sucursal, **entrada.validated_data)
-        return Response(self.get_serializer(obj).data, status=status.HTTP_201_CREATED)
+        return Response(SucursalSerializer(obj).data, status=status.HTTP_201_CREATED)
+
+    def partial_update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        entrada = SucursalEscrituraSerializer(obj, data=request.data, partial=True)
+        entrada.is_valid(raise_exception=True)
+        actualizado = ejecutar(sucursales.actualizar_sucursal,
+                              sucursal_uuid=obj.pk, **entrada.validated_data)
+        return Response(SucursalSerializer(actualizado).data)
 
 
 class AsignacionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,

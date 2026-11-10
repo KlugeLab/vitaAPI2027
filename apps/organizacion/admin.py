@@ -1,17 +1,23 @@
-"""Altas/ediciones de sucursales solo por servicios REST centrales."""
+"""Consulta técnica; la escritura debe pasar por API/servicios para emitir eventos."""
 from django.contrib import admin
-from .models import Sucursal
+from .models import Sucursal, Estado, Municipio, CodigoPostal, Colonia, Proveedor, LlaveProveedorSucursal
 
+class SoloLectura(admin.ModelAdmin):
+    def has_add_permission(self,request): return False
+    def has_change_permission(self,request,obj=None): return False
+    def has_delete_permission(self,request,obj=None): return False
 
 @admin.register(Sucursal)
-class SucursalAdmin(admin.ModelAdmin):
-    list_display = ('codigo', 'nombre', 'activa')
+class SucursalAdmin(SoloLectura):
+    list_display=('codigo','nombre','tipo','activa','version')
 
-    def has_add_permission(self, request):
-        return False
+@admin.register(Proveedor)
+class ProveedorAdmin(SoloLectura):
+    list_display=('codigo','nombre','activo')
 
-    def has_change_permission(self, request, obj=None):
-        return False
+@admin.register(LlaveProveedorSucursal)
+class LlaveProveedorSucursalAdmin(SoloLectura):
+    list_display=('sucursal','proveedor','activa')  # No mostrar la llave íntegra.
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+for modelo in (Estado,Municipio,CodigoPostal,Colonia):
+    admin.site.register(modelo,SoloLectura)

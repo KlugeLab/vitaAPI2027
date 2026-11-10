@@ -43,6 +43,7 @@ class RolCrearSerializer(serializers.Serializer):
 class RolActualizarSerializer(serializers.Serializer):
     nombre = serializers.CharField(required=False, max_length=150)
     descripcion = serializers.CharField(required=False, allow_blank=True)
+    activo = serializers.BooleanField(required=False)
 
 
 class RolPermisosSerializer(serializers.Serializer):
@@ -69,11 +70,9 @@ class CatalogoPermisoSerializer(serializers.ModelSerializer):
         read_only_fields = ('uuid', 'activo', 'version')
 
 
-class SucursalSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Sucursal
-        fields = ('uuid', 'codigo', 'nombre', 'activa')
-        read_only_fields = ('uuid', 'activa')
+# Exportar el serializer de lectura con el mismo nombre que usa la vista existente.
+from apps.organizacion.serializers import SucursalLecturaSerializer as SucursalSerializer
+from apps.organizacion.serializers import SucursalEscrituraSerializer
 
 
 class AsignacionCrearSerializer(serializers.Serializer):

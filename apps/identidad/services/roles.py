@@ -48,8 +48,8 @@ def crear_rol(*, codigo, nombre, descripcion=''):
 
 
 @transaction.atomic
-def actualizar_rol(*, rol_uuid, nombre=None, descripcion=None):
-    if nombre is None and descripcion is None:
+def actualizar_rol(*, rol_uuid, nombre=None, descripcion=None, activo=None):
+    if nombre is None and descripcion is None and activo is None:
         raise ReglaNegocioError('Se requiere un cambio.')
     rol = Rol.objects.select_for_update().select_related('group').get(pk=rol_uuid)
     if nombre is not None:
@@ -60,6 +60,8 @@ def actualizar_rol(*, rol_uuid, nombre=None, descripcion=None):
         rol.group.save(update_fields=['name'])
     if descripcion is not None:
         rol.descripcion = descripcion
+    if activo is not None:
+        rol.activo = activo
     rol.version += 1
     validar_modelo(rol)
     rol.save()

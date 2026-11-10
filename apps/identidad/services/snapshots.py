@@ -44,11 +44,23 @@ def rol_snapshot(rol):
 
 
 def sucursal_snapshot(sucursal):
+    # Contrato v1 ampliado: la sucursal antigua sigue aceptando las claves básicas.
     return {
-        'uuid': str(sucursal.pk),
-        'codigo': sucursal.codigo,
-        'nombre': sucursal.nombre,
-        'activa': sucursal.activa,
+        'uuid': str(sucursal.pk), 'codigo': sucursal.codigo,
+        'nombre': sucursal.nombre, 'activa': sucursal.activa,
+        'tipo': sucursal.tipo, 'version': sucursal.version,
+        'estado': sucursal.estado.nombre if sucursal.estado_id else '',
+        'municipio': sucursal.municipio.nombre if sucursal.municipio_id else '',
+        'codigo_postal': sucursal.codigo_postal.codigo if sucursal.codigo_postal_id else '',
+        'colonia': sucursal.colonia.nombre if sucursal.colonia_id else '',
+        'calle': sucursal.calle,
+        'numero_exterior': sucursal.numero_exterior,
+        'numero_interior': sucursal.numero_interior,
+        'domicilio_fiscal': sucursal.domicilio_fiscal,
+        'rfc': sucursal.rfc,
+        'correo': sucursal.correo,
+        'telefono': sucursal.telefono,
+        # Nunca exponer llaves de proveedores en el canal general de identidad.
     }
 
 
